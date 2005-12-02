@@ -216,3 +216,106 @@ if ($seq=~/^($start)/) {$res='M';} else {$res=$translate{substr($seq,0,3)};}
 for (my $i=3;$i<length($seq);$i+=3) {$res.=$translate{substr($seq,$i,3)};}
 return $res;
 }
+
+__END__
+
+=head1 NAME
+
+Bio::mGen - a fast and simple gene loading, helping automate BioPerl processes.
+
+=head1 SYNOPSIS
+
+  use Bio::mGen;
+
+  print mGen::get_set();
+
+or
+
+  print mGen::get_desc($as);
+
+or
+
+  print mGen::get_list($as,$gn);
+
+or
+
+  print mGen::get_gene($as);
+
+or
+
+  print mGen::get_fasta($as);
+
+or
+
+  print mGen::get_gene($as,$gn);
+
+or
+
+  my $list=mGen::get_list($as,$gn);
+  my ($prot,$crc,$gene_index,$gn,$size,$range,$list,$pol,$desc,$xtra,)=split(/\|/,$list);
+  print "Gene: $gn, Size: $size, Polarity: $pol\nDescription: $desc\n\n";
+
+or
+
+  mGen::reload_gene($as);
+
+or
+
+  print "PRI division => ".$gb_division{PRI}."\n";
+
+or
+
+  print "ACTG inverted is ".mGen::invert_dna('ACTG')."\n";
+
+or
+
+  my ($start,$stop,%aa)=mGen::translate_table(11);
+  print "Start/Stop codons: $start \/ $stop, GGG equals $aa{GGG}\n";
+  print "ATGGATTACTGA => ".mGen::codon2aa("ATGGATTACTGA",$start,%aa)."\n";
+
+=head1 DESCRIPTION
+
+C<Bio::mGen> This module extracts pre-parsed compressed DNA from "Genbank" and "Refseq" (soon more) databases without draining the NCBI web server resources.
+Guaranteed to work faster than any module because of the features: Parse-free, compression ensuring twice twice faster download and reading from local disk, caching leading to instant load next time you use the data, and also mirroring.
+
+=head2 Functions
+
+=over
+
+=item C<get_desc>
+
+Gives AS's Desciption & summary.
+
+=item C<get_list>
+
+List of genes' descriptions for the particular AS, gene name is optinal.
+
+=item C<get_fasta>
+
+Reads particular AS whole sequence in fasta format.
+
+=item C<get_gene>
+
+Reads parsed gene or list of genes for the particular AS. Gene name is optinal - leads to single gene output.
+
+=item C<reload_gene>
+
+Updates the cache file.
+
+=item C<translate_table>
+
+Loads the desirable translation table.
+
+=back
+
+=head1 EXPORTS
+
+C<Bio::mGen> exports the C<$db_path $base_path $imput_path $fasta_path $cache_path @mGen_urls $mGen_url %gb_division> by default, and C<$offset> by non-default.
+
+=head1 AUTHOR
+
+Ivan M Nanev, E<lt>cyber_indian at hotmail.comE<gt>
+
+Bug reports welcome, patches even more welcome.
+
+=cut
