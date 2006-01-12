@@ -6,7 +6,7 @@ use base 'Exporter';
 @EXPORT    = qw($db_path $base_path $imput_path $fasta_path $cache_path @mGen_urls $mGen_url %gb_division);
 @EXPORT_OK = qw($offset %db);
 
-$VERSION = '1.00';
+our $VERSION = '1.02';
 
 #our %as2gi,%db;
 our @mGen_urls=(),$mGen_url="";
