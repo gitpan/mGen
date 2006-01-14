@@ -1,14 +1,13 @@
-package mGen;
+package Bio::mGen;
 
 $|=1;
 
 use base 'Exporter';
-@EXPORT    = qw($db_path $base_path $imput_path $fasta_path $cache_path @mGen_urls $mGen_url %gb_division);
+@EXPORT    = qw($db_path $base_path $imput_path $fasta_path $cache_path @mGen_urls $mGen_url %gb_division mGen_reload_gene mGet_set mGet_desc mGet_list mGet_fasta mGet_gene mGen_invert_dna mGen_translate_table mGen_codon2aa);
 @EXPORT_OK = qw($offset %db);
 
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 
-#our %as2gi,%db;
 our @mGen_urls=(),$mGen_url="";
 
 our $offset = 3*3; # How many codons to use as a index !!! don't forget
@@ -22,17 +21,13 @@ our $index_path="$base_path/db/index/";
 our $fasta_path="$base_path/db/fasta/";
 our $imput_path="$base_path/db/download/";
 
-#our $db_file=$db_path."db.cache"; 
-
-our $ref_url="ftp://ftp.ncbi.nih.gov/refseq/release/complete/";
-our $genbank_url="ftp://ftp.ncbi.nih.gov/genbank/";
+our $mirrors_url="http://www.cyber-indian.com/bioperl/mGen-mirrors";
 
 if (! -e $db_path) {mkdir($db_path);}
 if (! -e $cache_path) {mkdir($cache_path);}
 if (! -e $fasta_path) {mkdir($fasta_path);}
 if (! -e $index_path) {mkdir($index_path);}
 if (! -e $imput_path) {mkdir($imput_path);}
-#if (! -e $db_file) {open DB,">$db_file" or die($db_file." : ".$!); close DB;}
 
 # --- VARs ---
 
@@ -65,11 +60,11 @@ use Compress::Zlib;
 sub file_size{my @s=stat(shift); return $s[7];}
 
 sub mix_url{
-if ($#mGen_urls==-1) {my $a=get("http://www.cyber-indian.com/bioperl/mGen-mirrors"); @mGen_urls=split(/\n/,$a); $mGen_url=@mGen_urls[0];}
+if ($#mGen_urls==-1) {my $a=get($mirrors_url); @mGen_urls=split(/\n/,$a); $mGen_url=@mGen_urls[0];}
 if ($#mGen_urls>0) {$mGen_url=@mGen_urls[int(rand($#mGen_urls+1))];}
 }
 
-sub reload_gene{
+sub mGen_reload_gene{
 my $as=shift; my $entry="";
 mix_url();
 $entry=get("http:\/\/$mGen_url\?as=$as");
@@ -79,9 +74,9 @@ print entry_F $entry;
 close entry_F;
 }
 
-sub get_set{mix_url(); return uncompress(get("http:\/\/$mGen_url\/?as=set"));}
+sub mGet_set{mix_url(); return uncompress(get("http:\/\/$mGen_url\/?as=set"));}
 
-sub get_desc{
+sub mGet_desc{
 my $as=shift; my $data,$entry="",$as_,$l,$a,$b,$c,$d;
 if (! -e $cache_path."$as\.cache"){mix_url(); $entry=get("http:\/\/$mGen_url\?as=$as&ver=$VERSION"); open entry_F,">$cache_path"."$as\.cache" or die "Error saving $as cache : $gzerrno"; binmode entry_F; print entry_F $entry; close entry_F;}
 if ($entry eq "") {open entry_F,"$cache_path"."$as\.cache" or die "Error loading $as cache : $gzerrno"; binmode entry_F; read(entry_F,$entry,file_size($cache_path."$as\.cache")); close entry_F;} if ($entry eq "") {return;}
@@ -89,7 +84,7 @@ if ($entry eq "") {open entry_F,"$cache_path"."$as\.cache" or die "Error loading
 return uncompress(substr($data,0,$a));
 }
 
-sub get_list{
+sub mGet_list{
 my ($as,$gn,)=@_; my $data,$entry="",$as_,$l,$a,$b,$c,$d;
 if (! -e $cache_path."$as\.cache"){mix_url(); $entry=get("http:\/\/$mGen_url\?as=$as&ver=$VERSION"); open entry_F,">$cache_path"."$as\.cache" or die "Error saving $as cache : $gzerrno"; binmode entry_F; print entry_F $entry; close entry_F;}
 if ($entry eq "") {open entry_F,"$cache_path"."$as\.cache" or die "Error loading $as cache : $gzerrno"; binmode entry_F; read(entry_F,$entry,file_size($cache_path."$as\.cache")); close entry_F;} if ($entry eq "") {return;}
@@ -99,7 +94,7 @@ if ($gn ne "") {($a,)=$a=~/(.*\|.*\|.*\|$gn\|.*)/m;}
 return $a;
 }
 
-sub get_fasta{
+sub mGet_fasta{
 my $as=shift; my $data,$entry="",$as_,$l,$a,$b,$c,$d;
 if (! -e $cache_path."$as\.cache"){mix_url(); $entry=get("http:\/\/$mGen_url\?as=$as&ver=$VERSION"); open entry_F,">$cache_path"."$as\.cache" or die "Error saving $as cache : $gzerrno"; binmode entry_F; print entry_F $entry; close entry_F;}
 if ($entry eq "") {open entry_F,"$cache_path"."$as\.cache" or die "Error loading $as cache : $gzerrno"; binmode entry_F; read(entry_F,$entry,file_size($cache_path."$as\.cache")); close entry_F;} if ($entry eq "") {return;}
@@ -108,7 +103,7 @@ $a=uncompress(substr($data,$a+$b,$c)); ($a,)=$a=~/^.*?\|\n(.*?)$/s;
 return $a;
 }
 
-sub get_genes{
+sub mGet_gene{
 my ($as,$gn,)=@_; my $data,$entry="",$as_,$l,$a,$b,$c,$d;
 if (! -e $cache_path."$as\.cache"){mix_url(); $entry=get("http:\/\/$mGen_url\?as=$as&ver=$VERSION"); open entry_F,">$cache_path"."$as\.cache" or die "Error saving $as cache : $gzerrno"; binmode entry_F; print entry_F $entry; close entry_F;}
 if ($entry eq "") {open entry_F,"$cache_path"."$as\.cache" or die "Error loading $as cache : $gzerrno"; binmode entry_F; read(entry_F,$entry,file_size($cache_path."$as\.cache")); close entry_F;} if ($entry eq "") {return;}
@@ -150,7 +145,7 @@ foreach (split '', $text) {
 return sprintf("%08X%08X", $high, $low);
 }
 
-sub invert_dna{my $seq=reverse shift; $seq=~tr/ACGTacgt/TGCAtgca/; return $seq;}
+sub mGen_invert_dna{my $seq=reverse shift; $seq=~tr/ACGTacgt/TGCAtgca/; return $seq;}
 
 #initialising a table
 #my ($start,$stop,%aa)=translate_table(11);
@@ -159,7 +154,7 @@ sub invert_dna{my $seq=reverse shift; $seq=~tr/ACGTacgt/TGCAtgca/; return $seq;}
 #or
 #print codon2aa($seq,$start,%aa);
 #
-sub translate_table{
+sub mGen_translate_table{
 my %translate; my $t = shift;
 my %translate_aa = (
 '1' => 'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
@@ -210,7 +205,7 @@ return ($start,$stop,%translate);
 }
 
 # ORFing
-sub codon2aa{
+sub mGen_codon2aa{
 my ($seq,$start,%translate)=@_; my $res; $seq =~ s/\r?\n//g;
 if ($seq=~/^($start)/) {$res='M';} else {$res=$translate{substr($seq,0,3)};}
 for (my $i=3;$i<length($seq);$i+=3) {$res.=$translate{substr($seq,$i,3)};}
@@ -227,37 +222,37 @@ Bio::mGen - a fast and simple gene loading, helping automate BioPerl processes.
 
   use Bio::mGen;
 
-  print mGen::get_set();
+  print mGet_set();
 
 or
 
-  print mGen::get_desc($as);
+  print mGet_desc($as);
 
 or
 
-  print mGen::get_list($as,$gn);
+  print mGet_list($as,$gn);
 
 or
 
-  print mGen::get_gene($as);
+  print mGet_gene($as);
 
 or
 
-  print mGen::get_fasta($as);
+  print mGet_fasta($as);
 
 or
 
-  print mGen::get_gene($as,$gn);
+  print mGet_gene($as,$gn);
 
 or
 
-  my $list=mGen::get_list($as,$gn);
+  my $list=mGet_list($as,$gn);
   my ($prot,$crc,$gene_index,$gn,$size,$range,$list,$pol,$desc,$xtra,)=split(/\|/,$list);
   print "Gene: $gn, Size: $size, Polarity: $pol\nDescription: $desc\n\n";
 
 or
 
-  mGen::reload_gene($as);
+  mGen_reload_gene($as);
 
 or
 
@@ -265,13 +260,13 @@ or
 
 or
 
-  print "ACTG inverted is ".mGen::invert_dna('ACTG')."\n";
+  print "ACTG inverted is ".mGen_invert_dna('ACTG')."\n";
 
 or
 
-  my ($start,$stop,%aa)=mGen::translate_table(11);
+  my ($start,$stop,%aa)=mGen_translate_table(11);
   print "Start/Stop codons: $start \/ $stop, GGG equals $aa{GGG}\n";
-  print "ATGGATTACTGA => ".mGen::codon2aa("ATGGATTACTGA",$start,%aa)."\n";
+  print "ATGGATTACTGA => ".mGen_codon2aa("ATGGATTACTGA",$start,%aa)."\n";
 
 =head1 DESCRIPTION
 

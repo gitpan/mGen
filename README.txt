@@ -17,7 +17,7 @@ LWP::Simple and Compress::Zlib
 
 --- Install ---
 
-To install just run 'perl Makefile.pl'
+To install just run 'perl Makefile.pl' and 'make install'
 
 --- Examples ---
 
@@ -27,28 +27,28 @@ $|=1;
 
 my $as="NZ_AAAG02000001.1",$gn="Rrub02000030";
 
-#mGen::reload_gene($as); # Updates the cache file
+#mGen_reload_gene($as); # Updates the cache file
 
-#print mGen::get_set(); # DB varibles
-#print mGen::get_desc($as); # GB Desciption & summary
-#print mGen::get_list($as); # List of genes' descriptions
-#print mGen::get_gene($as); # List of parsed genes
-#print mGen::get_fasta($as); # GB fasta
-#print mGen::get_gene($as,$gn); # If entered the gene name it will extract only the one, insted of the whole list
+#print mGet_set(); # DB varibles
+#print mGet_desc($as); # GB Desciption & summary
+#print mGet_list($as); # List of genes' descriptions
+#print mGet_gene($as); # List of parsed genes
+#print mGet_fasta($as); # GB fasta
+#print mGet_gene($as,$gn); # If entered the gene name it will extract only the one, insted of the whole list
 
-print mGen::get_list($as,$gn)."\n\n";
+print mGet_list($as,$gn)."\n\n";
 
-my $list=mGen::get_list($as,$gn);
+my $list=mGet_list($as,$gn);
 my ($prot,$crc,$gene_index,$gn,$size,$range,$list,$pol,$desc,$xtra,)=split(/\|/,$list);
 print "Gene: $gn, Size: $size, Polarity: $pol\nDescription: $desc\n\n";
 
 print "PRI division => ".$gb_division{PRI}."\n";
 
-print "ACTG inverted is ".mGen::invert_dna('ACTG')."\n";
+print "ACTG inverted is ".mGen_invert_dna('ACTG')."\n";
 
-my ($start,$stop,%aa)=mGen::translate_table(11);
+my ($start,$stop,%aa)=mGen_translate_table(11);
 print "Start/Stop codons: $start \/ $stop, GGG equals $aa{GGG}\n";
-print "ATGGATTACTGA => ".mGen::codon2aa("ATGGATTACTGA",$start,%aa)."\n";
+print "ATGGATTACTGA => ".mGen_codon2aa("ATGGATTACTGA",$start,%aa)."\n";
 
 
 --- Formats ---
